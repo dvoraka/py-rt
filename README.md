@@ -1,4 +1,4 @@
 py-rt
 =====
 
-Library for Request tracker.
+Library for Request Tracker (http://bestpractical.com/rt/).
