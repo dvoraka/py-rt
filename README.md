@@ -10,7 +10,7 @@ Examples:
 >>> rt.login('user', 'pass')
 >>> tickets = rt.search_ticket('Queue="General"')
 >>> print(tickets)
-Ticket list: 5 tickets
+Ticket list: 4 tickets
 >>> for t in tickets.list_all():
         print(t)
 (1, u'First ticket')
