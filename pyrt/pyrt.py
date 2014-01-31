@@ -8,6 +8,10 @@ from __future__ import print_function
 import requests
 import re
 
+__all__ = [
+    'BadRequestException', 'ParseError', 'Ticket',
+    'TicketHistory', 'TicketList', 'RT4']
+
 ####################################
 #import ConfigParser
 #import codecs
@@ -36,20 +40,18 @@ class ParseError(Exception):
 
 
 class Ticket:
-    '''Represent RT ticket.'''
+    '''Represent RT ticket.
+
+    :param str id\_: Ticket ID
+    :param str subject: Ticket subject
+    :param str data: Data
+    :param RT4 rt: RT instance
+    :raise TypeError: If rt is None
+
+    '''
 
     def __init__(self, id_, subject, data, rt):
-        '''Initialize ticket.
-
-        :param id\_: Ticket ID
-        :type id\_: str
-        :param subject: Ticket subject
-        :type subject: str
-        :param data: Data
-        :type data: {str: str}
-        :param rt: RT instance
-        :type rt: RT4
-        '''
+        '''Initialize ticket.'''
         
         if rt is None:
 
