@@ -41,7 +41,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'pyrt'
-copyright = u'2014, Author'
+copyright = u'2014, Alen Dvorak'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -283,3 +283,5 @@ epub_copyright = u'2014, Author'
 
 # Allow duplicate toc entries.
 #epub_tocdup = True
+
+autoclass_content = 'both'

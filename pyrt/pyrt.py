@@ -41,10 +41,14 @@ class Ticket:
     def __init__(self, id_, subject, data, rt):
         '''Initialize ticket.
 
-        @type id_: str
-        @type subject: str
-        @type data: {str: str}
-        @type rt: RT4
+        :param id\_: Ticket ID
+        :type id\_: str
+        :param subject: Ticket subject
+        :type subject: str
+        :param data: Data
+        :type data: {str: str}
+        :param rt: RT instance
+        :type rt: RT4
         '''
         
         if rt is None:
@@ -126,8 +130,10 @@ class TicketHistory:
     def __init__(self, id_, rt):
         '''Initialize history.
 
-        @type id_: str
-        @type rt: RT4
+        :param id\_: ID
+        :type id\_: str
+        :param rt: RT instance
+        :type rt: RT4
         '''
         
         self.id_ = id_
@@ -514,9 +520,10 @@ class RT4:
     def load_ticket(self, id_):
         '''Load ticket data and return it as dictionary.
         
-        @type id_: str
+        :param id\_: Ticket ID
+        :type id\_: str
         
-        @rtype: {str: str}
+        :rtype: {str: str}
         '''
 
         request = requests.get(
@@ -530,9 +537,10 @@ class RT4:
     def get_ticket(self, id_):
         '''Return ticket object with data.
         
-        @type id_: str
+        :param id\_: Ticket ID
+        :type id\_: str
 
-        @rtype: Ticket
+        :rtype: Ticket
         '''
 
         tdata = self.load_ticket(id_)
@@ -559,9 +567,10 @@ class RT4:
     def load_history(self, id_):
         '''Load history data for ticket.
         
-        @type id_: str
+        :param id\_: Ticket ID
+        :type id\_: str
         
-        @rtype: {str: {str: str}}
+        :rtype: {str: {str: str}}
         '''
 
         request = requests.get(
