@@ -631,10 +631,12 @@ class RT4:
     def add_comment(self, id_, message):
         '''Add comment to ticket.
         
-        @type id_: str
-        @type message: str
+        :param id\_: Ticket ID
+        :type id\_: str
+        :param message: Comment text
+        :type message: str
 
-        @rtype: None
+        :rtype: None
         '''
 
         payload = message
