@@ -1,0 +1,764 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pyrt.pyrt &mdash; pyrt  documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="pyrt  documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">pyrt  documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pyrt.pyrt</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&#39;&#39;&#39;Module for Request tracker wrapper.&#39;&#39;&#39;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">unicode_literals</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="c">####################################</span>
+<span class="c">#import ConfigParser</span>
+<span class="c">#import codecs</span>
+<span class="c">#</span>
+<span class="c">#config = ConfigParser.RawConfigParser()</span>
+<span class="c">#config.readfp(codecs.open(&#39;pyrt.cfg&#39;, &#39;r&#39;, &#39;utf8&#39;))</span>
+<span class="c">####################################</span>
+
+
+<div class="viewcode-block" id="BadRequestException"><a class="viewcode-back" href="../../pyrt.html#pyrt.pyrt.BadRequestException">[docs]</a><span class="k">class</span> <span class="nc">BadRequestException</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Exception for bad requests.&#39;&#39;&#39;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        
+        <span class="nb">super</span><span class="p">(</span><span class="n">BadRequestException</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span>
+
+</div>
+<div class="viewcode-block" id="ParseError"><a class="viewcode-back" href="../../pyrt.html#pyrt.pyrt.ParseError">[docs]</a><span class="k">class</span> <span class="nc">ParseError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Error in parsing.&#39;&#39;&#39;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        
+        <span class="nb">super</span><span class="p">(</span><span class="n">ParseError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span>
+
+</div>
+<div class="viewcode-block" id="Ticket"><a class="viewcode-back" href="../../pyrt.html#pyrt.pyrt.Ticket">[docs]</a><span class="k">class</span> <span class="nc">Ticket</span><span class="p">:</span>
+    <span class="sd">&#39;&#39;&#39;Represent RT ticket.&#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">id_</span><span class="p">,</span> <span class="n">subject</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">rt</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Initialize ticket.</span>
+
+<span class="sd">        @type id_: str</span>
+<span class="sd">        @type subject: str</span>
+<span class="sd">        @type data: {str: str}</span>
+<span class="sd">        @type rt: RT4</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        
+        <span class="k">if</span> <span class="n">rt</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&#39;rt cannot be None&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">id_</span> <span class="o">=</span> <span class="n">id_</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">subject</span> <span class="o">=</span> <span class="n">subject</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="n">TicketHistory</span><span class="p">(</span><span class="n">id_</span><span class="p">,</span> <span class="n">rt</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">due</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">priority</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="k">if</span> <span class="n">data</span><span class="p">:</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">map_data</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">rt</span> <span class="o">=</span> <span class="n">rt</span>
+
+    <span class="k">def</span> <span class="nf">__unicode__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        
+        <span class="k">return</span> <span class="s">&#39;Id: {}, Subject: {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">id_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">subject</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="k">return</span> <span class="nb">unicode</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s">&#39;utf-8&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Ticket.load_all"><a class="viewcode-back" href="../../pyrt.html#pyrt.pyrt.Ticket.load_all">[docs]</a>    <span class="k">def</span> <span class="nf">load_all</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Load all data.</span>
+<span class="sd">        </span>
+<span class="sd">        @rtype: None</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rt</span><span class="o">.</span><span class="n">load_ticket</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id_</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">map_data</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_history</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="Ticket.map_data"><a class="viewcode-back" href="../../pyrt.html#pyrt.pyrt.Ticket.map_data">[docs]</a>    <span class="k">def</span> <span class="nf">map_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Map data to attributes.</span>
+
+<span class="sd">        @type data: {str: str}</span>
+
+<span class="sd">        @rtype: None</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">subject</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;Subject&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">due</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;Due&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">priority</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;Priority&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Ticket.load_history"><a class="viewcode-back" href="../../pyrt.html#pyrt.pyrt.Ticket.load_history">[docs]</a>    <span class="k">def</span> <span class="nf">load_history</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Load history.</span>
+<span class="sd">        </span>
+<span class="sd">        @rtype: None</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="Ticket.comment"><a class="viewcode-back" href="../../pyrt.html#pyrt.pyrt.Ticket.comment">[docs]</a>    <span class="k">def</span> <span class="nf">comment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Add comment to ticket.</span>
+<span class="sd">        </span>
+<span class="sd">        @type text: str</span>
+<span class="sd">        </span>
+<span class="sd">        @rtype: None</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s">&#39;content&#39;</span><span class="p">:</span>
+            <span class="s">&#39;Action: correspond</span><span class="se">\n</span><span class="s">Text: {}</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">text</span><span class="p">)}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rt</span><span class="o">.</span><span class="n">add_comment</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id_</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="TicketHistory"><a class="viewcode-back" href="../../pyrt.html#pyrt.pyrt.TicketHistory">[docs]</a><span class="k">class</span> <span class="nc">TicketHistory</span><span class="p">:</span>
+    <span class="sd">&#39;&#39;&#39;Store and offer views for history.&#39;&#39;&#39;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">id_</span><span class="p">,</span> <span class="n">rt</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Initialize history.</span>
+
+<span class="sd">        @type id_: str</span>
+<span class="sd">        @type rt: RT4</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">id_</span> <span class="o">=</span> <span class="n">id_</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rt</span> <span class="o">=</span> <span class="n">rt</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f_history</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">history_list</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">comments</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c"># wanted history fields</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;Ticket&#39;</span><span class="p">,</span> <span class="s">&#39;Type&#39;</span><span class="p">,</span> <span class="s">&#39;Content&#39;</span><span class="p">,</span> <span class="s">&#39;Creator&#39;</span><span class="p">]</span>
+    
+<div class="viewcode-block" id="TicketHistory.load"><a class="viewcode-back" href="../../pyrt.html#pyrt.pyrt.TicketHistory.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Load all data to object.</span>
+
+<span class="sd">        @rtype: None</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rt</span><span class="o">.</span><span class="n">load_history</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id_</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="n">data</span>
+
+<span class="c">#        # filter history to fh</span>
+<span class="c">#        fh = {}</span>
+<span class="c">#        for history in data:</span>
+<span class="c">#</span>
+<span class="c">#            fh[history] = self.history_filter(</span>
+<span class="c">#                data[history], self.fields)</span>
+<span class="c">#</span>
+
+        <span class="c"># for web [{value: content}]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">history_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">hist</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">,</span>
+                <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">),</span>
+                <span class="n">reverse</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">history_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="n">hist</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">comments</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c"># temporary solution - test</span>
+        <span class="k">for</span> <span class="n">comment</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)):</span>
+
+            <span class="n">temp</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="n">comment</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+
+                <span class="n">temp</span> <span class="o">+=</span> <span class="n">key</span> <span class="o">+</span> <span class="s">&#39;: &#39;</span> <span class="o">+</span> <span class="n">value</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">comments</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="TicketList"><a class="viewcode-back" href="../../pyrt.html#pyrt.pyrt.TicketList">[docs]</a><span class="k">class</span> <span class="nc">TicketList</span><span class="p">:</span>
+    <span class="sd">&#39;&#39;&#39;Container for tickets.&#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">rt</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Initialize container</span>
+<span class="sd">        </span>
+<span class="sd">        @type data: dict of tickets - {str: str}/{&#39;id&#39;: &#39;Subject&#39;}</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">tickets</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">id_</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">tickets</span><span class="p">[</span><span class="n">id_</span><span class="p">]</span> <span class="o">=</span> <span class="n">Ticket</span><span class="p">(</span><span class="n">id_</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="n">id_</span><span class="p">],</span> <span class="bp">None</span><span class="p">,</span> <span class="n">rt</span><span class="p">)</span>
+
+<div class="viewcode-block" id="TicketList.list_all"><a class="viewcode-back" href="../../pyrt.html#pyrt.pyrt.TicketList.list_all">[docs]</a>    <span class="k">def</span> <span class="nf">list_all</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Return tickets info.</span>
+
+<span class="sd">        @rtype: tuple of (int, str)</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        
+        <span class="n">tinfo</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">tid</span><span class="p">,</span> <span class="n">tobj</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tickets</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+
+            <span class="k">try</span><span class="p">:</span>
+
+                <span class="n">tinfo</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="nb">int</span><span class="p">(</span><span class="n">tid</span><span class="p">),</span> <span class="n">tobj</span><span class="o">.</span><span class="n">subject</span><span class="p">))</span>
+
+            <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                
+                <span class="k">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">tinfo</span><span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">__unicode__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">info</span> <span class="o">=</span> <span class="s">&#39;Ticket list: {} tickets&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tickets</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">info</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="k">return</span> <span class="nb">unicode</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s">&#39;utf-8&#39;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="RT4"><a class="viewcode-back" href="../../pyrt.html#pyrt.pyrt.RT4">[docs]</a><span class="k">class</span> <span class="nc">RT4</span><span class="p">:</span>
+    <span class="sd">&#39;&#39;&#39;Request tracker.&#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">rest_url</span><span class="o">=</span><span class="s">&#39;http://localhost/REST/1.0/&#39;</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Initialize RT.</span>
+
+<span class="sd">        @type rest_url: str</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">rest_url</span> <span class="o">=</span> <span class="n">rest_url</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">credentials</span> <span class="o">=</span> <span class="bp">None</span>
+    
+<div class="viewcode-block" id="RT4.login"><a class="viewcode-back" href="../../pyrt.html#pyrt.pyrt.RT4.login">[docs]</a>    <span class="k">def</span> <span class="nf">login</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">login_name</span><span class="p">,</span> <span class="n">password</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Save credentials.</span>
+
+<span class="sd">        @type login: str</span>
+<span class="sd">        @type password: str</span>
+
+<span class="sd">        @rtype: None</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">credentials</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;user&#39;</span><span class="p">:</span> <span class="n">login_name</span><span class="p">,</span> <span class="s">&#39;pass&#39;</span><span class="p">:</span> <span class="n">password</span><span class="p">}</span>
+
+<span class="c">#    def search(self):</span>
+<span class="c">#        &#39;&#39;&#39;???&#39;&#39;&#39;</span>
+<span class="c">#</span>
+<span class="c">#        pass</span>
+</div>
+<div class="viewcode-block" id="RT4.check_reply"><a class="viewcode-back" href="../../pyrt.html#pyrt.pyrt.RT4.check_reply">[docs]</a>    <span class="k">def</span> <span class="nf">check_reply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reply</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Check head of reply and return data without head.</span>
+<span class="sd">        </span>
+<span class="sd">        @type reply: str</span>
+
+<span class="sd">        @rtype: str</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">reply</span><span class="p">:</span>
+
+            <span class="k">return</span> <span class="s">&#39;&#39;</span>
+
+        <span class="c"># create lines from reply</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">reply</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+
+        <span class="n">code</span> <span class="o">=</span> <span class="n">lines</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">code_fields</span> <span class="o">=</span> <span class="n">code</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+
+        <span class="c"># simple check</span>
+        <span class="k">if</span> <span class="n">code_fields</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="s">&#39;200&#39;</span><span class="p">:</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+
+                <span class="c"># show first few reply lines</span>
+                <span class="k">raise</span> <span class="n">BadRequestException</span><span class="p">(</span><span class="n">lines</span><span class="p">[</span><span class="mi">2</span><span class="p">:</span><span class="mi">5</span><span class="p">])</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                
+                <span class="k">raise</span> <span class="n">BadRequestException</span><span class="p">(</span><span class="s">&#39;Unknown error.&#39;</span><span class="p">)</span>
+
+        <span class="c"># create string and remove redundant empty lines at the end</span>
+        <span class="n">body</span> <span class="o">=</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">[</span><span class="mi">2</span><span class="p">:])</span>
+        <span class="n">body</span> <span class="o">=</span> <span class="n">body</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span>
+
+        <span class="k">return</span> <span class="n">body</span>
+</div>
+<div class="viewcode-block" id="RT4.parse_reply"><a class="viewcode-back" href="../../pyrt.html#pyrt.pyrt.RT4.parse_reply">[docs]</a>    <span class="k">def</span> <span class="nf">parse_reply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reply</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Parse data from string.</span>
+
+<span class="sd">        @type reply: str</span>
+
+<span class="sd">        @rtype: {str: str}</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">reply</span><span class="p">:</span>
+
+            <span class="k">return</span> <span class="bp">None</span>
+
+        <span class="n">lines</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_reply</span><span class="p">(</span><span class="n">reply</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+
+            <span class="k">if</span> <span class="n">line</span> <span class="o">==</span> <span class="s">&#39;&#39;</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="k">if</span> <span class="n">line</span> <span class="o">==</span> <span class="s">&#39;No matching results.&#39;</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;#&#39;</span><span class="p">):</span>
+                <span class="k">continue</span>
+
+            <span class="n">fields</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;:&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">id_</span> <span class="o">=</span> <span class="n">fields</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">data</span><span class="p">[</span><span class="n">id_</span><span class="p">]</span> <span class="o">=</span> <span class="n">fields</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lstrip</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">data</span>
+</div>
+<div class="viewcode-block" id="RT4.parse_history_reply"><a class="viewcode-back" href="../../pyrt.html#pyrt.pyrt.RT4.parse_history_reply">[docs]</a>    <span class="k">def</span> <span class="nf">parse_history_reply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reply</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Parse history data from string.</span>
+
+<span class="sd">        @type reply: str</span>
+
+<span class="sd">        @rtype: {str: {str: str}}</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">reply</span><span class="p">:</span>
+
+            <span class="k">return</span> <span class="bp">None</span>
+
+        <span class="n">lines</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_reply</span><span class="p">(</span><span class="n">reply</span><span class="p">)</span>
+
+        <span class="c"># {history id: {value: content}}</span>
+        <span class="n">history</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="n">contents</span> <span class="o">=</span> <span class="n">lines</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;--&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">comment</span> <span class="ow">in</span> <span class="n">contents</span><span class="p">:</span>
+
+            <span class="n">h_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_history_id</span><span class="p">(</span><span class="n">comment</span><span class="p">)</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="p">{}</span>
+
+            <span class="c"># id</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;^(id): (\d*)$&#39;</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
+            <span class="n">found</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">comment</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">found</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+
+                <span class="k">raise</span> <span class="n">ParseError</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">found</span><span class="p">))</span>
+
+            <span class="n">v_id</span> <span class="o">=</span> <span class="n">found</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">values</span><span class="p">[</span><span class="n">v_id</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">v_id</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+            <span class="c"># Ticket</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;^(Ticket): (\d*)$&#39;</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
+            <span class="n">found</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">comment</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">found</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+
+                <span class="k">raise</span> <span class="n">ParseError</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">found</span><span class="p">))</span>
+
+            <span class="n">v_ticket</span> <span class="o">=</span> <span class="n">found</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">values</span><span class="p">[</span><span class="n">v_ticket</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">v_ticket</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+            <span class="c"># Type</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;^(Type): (.+)$&#39;</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
+            <span class="n">found</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">comment</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">found</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+
+                <span class="k">raise</span> <span class="n">ParseError</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">found</span><span class="p">))</span>
+
+            <span class="n">v_type</span> <span class="o">=</span> <span class="n">found</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">values</span><span class="p">[</span><span class="n">v_type</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">v_type</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+            <span class="c"># Content</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;^(Content): ((?:.*\n)(?:^ +.*\n)*)&#39;</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
+            <span class="n">found</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">comment</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">found</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+
+                <span class="k">raise</span> <span class="n">ParseError</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">found</span><span class="p">))</span>
+
+            <span class="k">elif</span> <span class="n">found</span><span class="p">:</span>
+
+                <span class="n">v_content</span> <span class="o">=</span> <span class="n">found</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">v_content</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">):</span>
+
+                    <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">lstrip</span><span class="p">())</span>
+
+                <span class="n">values</span><span class="p">[</span><span class="n">v_content</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+
+            <span class="c"># Creator</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;^(Creator): (.+)$&#39;</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
+            <span class="n">found</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">comment</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">found</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+
+                <span class="k">raise</span> <span class="n">ParseError</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">found</span><span class="p">))</span>
+
+            <span class="n">v_creator</span> <span class="o">=</span> <span class="n">found</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">values</span><span class="p">[</span><span class="n">v_creator</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">v_creator</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+            <span class="c"># Description</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;^(Description): (.+)$&#39;</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
+            <span class="n">found</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">comment</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">found</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+
+                <span class="k">raise</span> <span class="n">ParseError</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">found</span><span class="p">))</span>
+
+            <span class="n">v_description</span> <span class="o">=</span> <span class="n">found</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">values</span><span class="p">[</span><span class="n">v_description</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">v_description</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+            <span class="c"># Created</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;^(Created): (.+)$&#39;</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
+            <span class="n">found</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">comment</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">found</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+
+                <span class="k">raise</span> <span class="n">ParseError</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">found</span><span class="p">))</span>
+
+            <span class="n">v_created</span> <span class="o">=</span> <span class="n">found</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">values</span><span class="p">[</span><span class="n">v_created</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">v_created</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+            <span class="n">history</span><span class="p">[</span><span class="n">h_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">values</span>
+
+        <span class="k">return</span> <span class="n">history</span>
+</div>
+    <span class="k">def</span> <span class="nf">_strip_all</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">history</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Clean history string before next processsing.</span>
+
+<span class="sd">        @type history: str</span>
+
+<span class="sd">        @rtype: str</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="n">temp</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">history</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;#&#39;</span><span class="p">):</span>
+
+                <span class="k">continue</span>
+
+            <span class="k">elif</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">):</span>
+                
+                <span class="k">continue</span>
+
+            <span class="k">else</span><span class="p">:</span>
+
+                <span class="n">temp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+
+        <span class="n">clean_str</span> <span class="o">=</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span>
+
+        <span class="n">new_str</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+        <span class="n">nl</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">for</span> <span class="n">char</span> <span class="ow">in</span> <span class="n">clean_str</span><span class="p">:</span>
+            
+            <span class="k">if</span> <span class="n">char</span> <span class="o">==</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">nl</span><span class="p">:</span>
+
+                <span class="n">new_str</span> <span class="o">+=</span> <span class="n">char</span>
+                <span class="n">nl</span> <span class="o">=</span> <span class="bp">True</span>
+            
+            <span class="k">elif</span> <span class="n">char</span> <span class="o">==</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span> <span class="ow">and</span> <span class="n">nl</span><span class="p">:</span>
+
+                <span class="n">nl</span> <span class="o">=</span> <span class="bp">True</span>
+
+            <span class="k">else</span><span class="p">:</span>
+
+                <span class="n">new_str</span> <span class="o">+=</span> <span class="n">char</span>
+                <span class="n">nl</span> <span class="o">=</span> <span class="bp">False</span>
+
+        <span class="k">return</span> <span class="n">new_str</span>
+
+    <span class="k">def</span> <span class="nf">_strip_hashes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lines</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Delete hashes from start of lines.</span>
+
+<span class="sd">        @type lines: str</span>
+
+<span class="sd">        @rtype: str</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        
+        <span class="n">temp</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">):</span>
+
+            <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;#&#39;</span><span class="p">):</span>
+
+                <span class="k">continue</span>
+
+            <span class="k">else</span><span class="p">:</span>
+
+                <span class="n">temp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_history_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">history</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Return history id from string.</span>
+<span class="sd">        </span>
+<span class="sd">        @type history: str</span>
+<span class="sd">        </span>
+<span class="sd">        @rtype: str</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="n">r</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;^id: (\d+)$&#39;</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">MULTILINE</span><span class="p">)</span>
+
+        <span class="n">id_list</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">history</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">id_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+
+            <span class="k">return</span> <span class="n">id_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="k">return</span> <span class="bp">None</span>
+
+<div class="viewcode-block" id="RT4.load_ticket"><a class="viewcode-back" href="../../pyrt.html#pyrt.pyrt.RT4.load_ticket">[docs]</a>    <span class="k">def</span> <span class="nf">load_ticket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">id_</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Load ticket data and return it as dictionary.</span>
+<span class="sd">        </span>
+<span class="sd">        @type id_: str</span>
+<span class="sd">        </span>
+<span class="sd">        @rtype: {str: str}</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="n">request</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rest_url</span> <span class="o">+</span> <span class="s">&#39;ticket/&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">id_</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;/show&#39;</span><span class="p">,</span>
+            <span class="n">params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">credentials</span><span class="p">)</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_reply</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">data</span>
+</div>
+<div class="viewcode-block" id="RT4.get_ticket"><a class="viewcode-back" href="../../pyrt.html#pyrt.pyrt.RT4.get_ticket">[docs]</a>    <span class="k">def</span> <span class="nf">get_ticket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">id_</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Return ticket object with data.</span>
+<span class="sd">        </span>
+<span class="sd">        @type id_: str</span>
+
+<span class="sd">        @rtype: Ticket</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="n">tdata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_ticket</span><span class="p">(</span><span class="n">id_</span><span class="p">)</span>
+        <span class="n">ticket</span> <span class="o">=</span> <span class="n">Ticket</span><span class="p">(</span><span class="n">id_</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="n">tdata</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">ticket</span>
+</div>
+<div class="viewcode-block" id="RT4.search_ticket"><a class="viewcode-back" href="../../pyrt.html#pyrt.pyrt.RT4.search_ticket">[docs]</a>    <span class="k">def</span> <span class="nf">search_ticket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Search tickets according to query and return TicketList.</span>
+
+<span class="sd">        @type query: str</span>
+
+<span class="sd">        @rtype: TicketList</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="n">request</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rest_url</span> <span class="o">+</span> <span class="s">&#39;search/ticket?query=&#39;</span> <span class="o">+</span> <span class="n">query</span><span class="p">,</span>
+            <span class="n">params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">credentials</span><span class="p">)</span>
+
+        <span class="n">tl</span> <span class="o">=</span> <span class="n">TicketList</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parse_reply</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">text</span><span class="p">),</span> <span class="bp">self</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">tl</span>
+    </div>
+<div class="viewcode-block" id="RT4.load_history"><a class="viewcode-back" href="../../pyrt.html#pyrt.pyrt.RT4.load_history">[docs]</a>    <span class="k">def</span> <span class="nf">load_history</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">id_</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Load history data for ticket.</span>
+<span class="sd">        </span>
+<span class="sd">        @type id_: str</span>
+<span class="sd">        </span>
+<span class="sd">        @rtype: {str: {str: str}}</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="n">request</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rest_url</span> <span class="o">+</span> <span class="s">&#39;ticket/&#39;</span> <span class="o">+</span> <span class="n">id_</span> <span class="o">+</span> <span class="s">&#39;/history?format=l&#39;</span><span class="p">,</span>
+            <span class="n">params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">credentials</span><span class="p">)</span>
+
+        <span class="n">history</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_history_reply</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+
+        <span class="c"># {id: {value: content}}</span>
+        <span class="k">return</span> <span class="n">history</span>
+</div>
+<div class="viewcode-block" id="RT4.user_exists"><a class="viewcode-back" href="../../pyrt.html#pyrt.pyrt.RT4.user_exists">[docs]</a>    <span class="k">def</span> <span class="nf">user_exists</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Try to find user in RT and return boolean value.</span>
+
+<span class="sd">        It depends on &#39;Disabled&#39; field from RT user reply.</span>
+
+<span class="sd">        @type username: str</span>
+
+<span class="sd">        @rtype: boolean</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="n">reply</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rest_url</span> <span class="o">+</span> <span class="s">&#39;user/&#39;</span> <span class="o">+</span> <span class="n">username</span><span class="p">,</span>
+            <span class="n">params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">credentials</span><span class="p">)</span>
+
+        <span class="k">print</span><span class="p">(</span><span class="n">reply</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_reply</span><span class="p">(</span><span class="n">reply</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s">&#39;Disabled&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+
+            <span class="k">return</span> <span class="bp">True</span>
+
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="k">return</span> <span class="bp">False</span>
+</div>
+<div class="viewcode-block" id="RT4.get_usermail"><a class="viewcode-back" href="../../pyrt.html#pyrt.pyrt.RT4.get_usermail">[docs]</a>    <span class="k">def</span> <span class="nf">get_usermail</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Try to find user mail.</span>
+
+<span class="sd">        @type username: str</span>
+
+<span class="sd">        @rtype: str</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="n">reply</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rest_url</span> <span class="o">+</span> <span class="s">&#39;user/&#39;</span> <span class="o">+</span> <span class="n">username</span><span class="p">,</span>
+            <span class="n">params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">credentials</span><span class="p">)</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_reply</span><span class="p">(</span><span class="n">reply</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">__debug__</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s">&#39;get_usermail data:</span><span class="se">\n</span><span class="s">{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+
+        <span class="n">mail</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s">&#39;EmailAddress&#39;</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">mail</span>
+
+<span class="c">#    def history(self, id_):</span>
+<span class="c">#        &#39;&#39;&#39;???&#39;&#39;&#39;</span>
+<span class="c">#</span>
+<span class="c">#        request = requests.get(</span>
+<span class="c">#            self.rest_url + &#39;ticket/&#39; + id_ + &#39;/history?format=l&#39;,</span>
+<span class="c">#            params=self.credentials)</span>
+<span class="c">#</span>
+<span class="c">#        return request.text</span>
+<span class="c">#</span></div>
+<div class="viewcode-block" id="RT4.add_comment"><a class="viewcode-back" href="../../pyrt.html#pyrt.pyrt.RT4.add_comment">[docs]</a>    <span class="k">def</span> <span class="nf">add_comment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">id_</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Add comment to ticket.</span>
+<span class="sd">        </span>
+<span class="sd">        @type id_: str</span>
+<span class="sd">        @type message: str</span>
+
+<span class="sd">        @rtype: None</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="n">payload</span> <span class="o">=</span> <span class="n">message</span>
+        <span class="n">reply</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rest_url</span> <span class="o">+</span> <span class="s">&#39;ticket/&#39;</span> <span class="o">+</span> <span class="n">id_</span> <span class="o">+</span> <span class="s">&#39;/comment&#39;</span><span class="p">,</span>
+            <span class="n">params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">credentials</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">payload</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">__debug__</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s">&#39;add_comment reply:</span><span class="se">\n</span><span class="s">{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">reply</span><span class="o">.</span><span class="n">text</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="RT4.create_ticket"><a class="viewcode-back" href="../../pyrt.html#pyrt.pyrt.RT4.create_ticket">[docs]</a>    <span class="k">def</span> <span class="nf">create_ticket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ticket_data</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Create ticket and return info.</span>
+<span class="sd">        </span>
+<span class="sd">        @type ticket_data: dict - {&#39;content&#39;: ticket body}</span>
+<span class="sd">        </span>
+<span class="sd">        @rtype: str</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="n">payload</span> <span class="o">=</span> <span class="n">ticket_data</span>
+        <span class="n">reply</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rest_url</span> <span class="o">+</span> <span class="s">&#39;ticket/new&#39;</span><span class="p">,</span>
+            <span class="n">params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">credentials</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">payload</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">__debug__</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s">&#39;create_ticket reply:</span><span class="se">\n</span><span class="s">{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">reply</span><span class="o">.</span><span class="n">text</span><span class="p">))</span>
+
+        <span class="n">info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_reply</span><span class="p">(</span><span class="n">reply</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">info</span>
+
+</div></div>
+<div class="viewcode-block" id="RequestTracker"><a class="viewcode-back" href="../../pyrt.html#pyrt.pyrt.RequestTracker">[docs]</a><span class="k">class</span> <span class="nc">RequestTracker</span><span class="p">:</span>
+    <span class="s">&#39;High-level API for RT&#39;</span>
+    
+    <span class="k">pass</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">pyrt  documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Author.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
