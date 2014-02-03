@@ -83,7 +83,7 @@ class Ticket:
     def load_all(self):
         '''Load all data.
         
-        @rtype: None
+        :return: None
         '''
         
         data = self.rt.load_ticket(self.id_)
@@ -94,9 +94,10 @@ class Ticket:
     def map_data(self, data):
         '''Map data to attributes.
 
-        @type data: {str: str}
+        :param data: Data
+        :type data: {str: str}
 
-        @rtype: None
+        :return: None
         '''
         
         self.subject = data.get('Subject', None)
@@ -107,7 +108,7 @@ class Ticket:
     def load_history(self):
         '''Load history.
         
-        @rtype: None
+        :return: None
         '''
         
         self.history.load()
@@ -115,9 +116,9 @@ class Ticket:
     def comment(self, text):
         '''Add comment to ticket.
         
-        @type text: str
+        :param str text: Text
         
-        @rtype: None
+        :return: None
         '''
 
         data = {
@@ -153,7 +154,7 @@ class TicketHistory:
     def load(self):
         '''Load all data to object.
 
-        @rtype: None
+        :return: None
         '''
         
         data = self.rt.load_history(self.id_)
