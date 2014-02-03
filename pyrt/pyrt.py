@@ -190,13 +190,14 @@ class TicketHistory:
 
 
 class TicketList:
-    '''Container for tickets.'''
+    '''Container for tickets.
+
+        :param data: Tickets
+        :type data: dict of tickets {str: str}/{'id': 'Subject'}
+        '''
 
     def __init__(self, data, rt):
-        '''Initialize container
-        
-        @type data: dict of tickets - {str: str}/{'id': 'Subject'}
-        '''
+        '''Initialize container'''
 
         self.tickets = {}
         for id_ in data:
@@ -206,7 +207,7 @@ class TicketList:
     def list_all(self):
         '''Return tickets info.
 
-        @rtype: tuple of (int, str)
+        :return: tuple of (int, str)
         '''
         
         tinfo = []
@@ -234,15 +235,15 @@ class TicketList:
 
 
 class RT4:
-    '''Request tracker.'''
+    '''Request tracker.
+
+    :param str rest_url: REST URL
+    '''
 
     def __init__(
             self,
             rest_url='http://localhost/REST/1.0/'):
-        '''Initialize RT.
-
-        @type rest_url: str
-        '''
+        '''Initialize RT.'''
 
         self.rest_url = rest_url
         self.credentials = None
@@ -250,10 +251,10 @@ class RT4:
     def login(self, login_name, password):
         '''Save credentials.
 
-        @type login: str
-        @type password: str
+        :param str login_name: Login
+        :param str password: Password
 
-        @rtype: None
+        :return: None
         '''
         
         self.credentials = {'user': login_name, 'pass': password}
@@ -266,9 +267,9 @@ class RT4:
     def check_reply(self, reply):
         '''Check head of reply and return data without head.
         
-        @type reply: str
+        :param str reply: Reply text
 
-        @rtype: str
+        :return: str
         '''
 
         if not reply:
@@ -302,9 +303,9 @@ class RT4:
     def parse_reply(self, reply):
         '''Parse data from string.
 
-        @type reply: str
+        :param str reply: Reply text
 
-        @rtype: {str: str}
+        :return: {str: str}
         '''
 
         if not reply:
@@ -334,9 +335,9 @@ class RT4:
     def parse_history_reply(self, reply):
         '''Parse history data from string.
 
-        @type reply: str
+        :param str reply: History reply text
 
-        @rtype: {str: {str: str}}
+        :return: {str: {str: str}}
         '''
         
         if not reply:
@@ -438,9 +439,9 @@ class RT4:
     def _strip_all(self, history):
         '''Clean history string before next processsing.
 
-        @type history: str
+        :param str history: History text
 
-        @rtype: str
+        return: str
         '''
 
         temp = []
@@ -482,9 +483,9 @@ class RT4:
     def _strip_hashes(self, lines):
         '''Delete hashes from start of lines.
 
-        @type lines: str
+        :param str lines: Lines string
 
-        @rtype: str
+        :return: str
         '''
         
         temp = []
@@ -503,9 +504,9 @@ class RT4:
     def _history_id(self, history):
         '''Return history id from string.
         
-        @type history: str
+        :param str history: History text
         
-        @rtype: str
+        :return: str
         '''
 
         r = re.compile(r'^id: (\d+)$', re.MULTILINE)
@@ -554,9 +555,9 @@ class RT4:
     def search_ticket(self, query):
         '''Search tickets according to query and return TicketList.
 
-        @type query: str
+        :param str query: Query
 
-        @rtype: TicketList
+        :return: TicketList
         '''
 
         request = requests.get(
