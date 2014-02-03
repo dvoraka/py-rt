@@ -557,7 +557,7 @@ class RT4:
 
         :param str query: Query
 
-        :return: TicketList
+        :return: :class:`TicketList`
         '''
 
         request = requests.get(
@@ -591,9 +591,9 @@ class RT4:
 
         It depends on 'Disabled' field from RT user reply.
 
-        @type username: str
+        :param str username: Username
 
-        @rtype: boolean
+        :return: bool
         '''
 
         reply = requests.get(
@@ -614,9 +614,9 @@ class RT4:
     def get_usermail(self, username):
         '''Try to find user mail.
 
-        @type username: str
+        :param str username: Username
 
-        @rtype: str
+        :return: str
         '''
 
         reply = requests.get(
@@ -662,9 +662,10 @@ class RT4:
     def create_ticket(self, ticket_data):
         '''Create ticket and return info.
         
-        @type ticket_data: dict - {'content': ticket body}
+        :param ticket_data: Ticket data
+        :type ticket_data: dict - {'content': ticket body}
         
-        @rtype: str
+        :return: str
         '''
 
         payload = ticket_data
