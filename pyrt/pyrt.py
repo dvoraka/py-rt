@@ -128,16 +128,16 @@ class Ticket:
 
 
 class TicketHistory:
-    '''Store and offer views for history.'''
-    
-    def __init__(self, id_, rt):
-        '''Initialize history.
+    '''Store and offer views for history.
 
-        :param id\_: ID
-        :type id\_: str
-        :param rt: RT instance
-        :type rt: RT4
-        '''
+    :param id\_: ID
+    :type id\_: str
+    :param rt: RT4 instance
+    :type rt: :class:`RT4`
+    '''
+
+    def __init__(self, id_, rt):
+        '''Initialize history.'''
         
         self.id_ = id_
         self.rt = rt
