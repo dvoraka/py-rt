@@ -8,6 +8,10 @@ from __future__ import print_function
 import requests
 import re
 
+__all__ = [
+    'BadRequestException', 'ParseError', 'Ticket',
+    'TicketHistory', 'TicketList', 'RT4']
+
 ####################################
 #import ConfigParser
 #import codecs
@@ -36,16 +40,18 @@ class ParseError(Exception):
 
 
 class Ticket:
-    '''Represent RT ticket.'''
+    '''Represent RT ticket.
+
+    :param str id\_: Ticket ID
+    :param str subject: Ticket subject
+    :param str data: Data
+    :param RT4 rt: RT instance
+    :raise TypeError: If rt is None
+
+    '''
 
     def __init__(self, id_, subject, data, rt):
-        '''Initialize ticket.
-
-        @type id_: str
-        @type subject: str
-        @type data: {str: str}
-        @type rt: RT4
-        '''
+        '''Initialize ticket.'''
         
         if rt is None:
 
@@ -77,7 +83,7 @@ class Ticket:
     def load_all(self):
         '''Load all data.
         
-        @rtype: None
+        :return: None
         '''
         
         data = self.rt.load_ticket(self.id_)
@@ -88,9 +94,10 @@ class Ticket:
     def map_data(self, data):
         '''Map data to attributes.
 
-        @type data: {str: str}
+        :param data: Data
+        :type data: {str: str}
 
-        @rtype: None
+        :return: None
         '''
         
         self.subject = data.get('Subject', None)
@@ -101,7 +108,7 @@ class Ticket:
     def load_history(self):
         '''Load history.
         
-        @rtype: None
+        :return: None
         '''
         
         self.history.load()
@@ -109,9 +116,9 @@ class Ticket:
     def comment(self, text):
         '''Add comment to ticket.
         
-        @type text: str
+        :param str text: Text
         
-        @rtype: None
+        :return: None
         '''
 
         data = {
@@ -121,14 +128,16 @@ class Ticket:
 
 
 class TicketHistory:
-    '''Store and offer views for history.'''
-    
-    def __init__(self, id_, rt):
-        '''Initialize history.
+    '''Store and offer views for history.
 
-        @type id_: str
-        @type rt: RT4
-        '''
+    :param id\_: ID
+    :type id\_: str
+    :param rt: RT4 instance
+    :type rt: :class:`RT4`
+    '''
+
+    def __init__(self, id_, rt):
+        '''Initialize history.'''
         
         self.id_ = id_
         self.rt = rt
@@ -145,7 +154,7 @@ class TicketHistory:
     def load(self):
         '''Load all data to object.
 
-        @rtype: None
+        :return: None
         '''
         
         data = self.rt.load_history(self.id_)
@@ -181,13 +190,14 @@ class TicketHistory:
 
 
 class TicketList:
-    '''Container for tickets.'''
+    '''Container for tickets.
+
+        :param data: Tickets
+        :type data: dict of tickets {str: str}/{'id': 'Subject'}
+        '''
 
     def __init__(self, data, rt):
-        '''Initialize container
-        
-        @type data: dict of tickets - {str: str}/{'id': 'Subject'}
-        '''
+        '''Initialize container'''
 
         self.tickets = {}
         for id_ in data:
@@ -197,7 +207,7 @@ class TicketList:
     def list_all(self):
         '''Return tickets info.
 
-        @rtype: tuple of (int, str)
+        :return: tuple of (int, str)
         '''
         
         tinfo = []
@@ -225,15 +235,15 @@ class TicketList:
 
 
 class RT4:
-    '''Request tracker.'''
+    '''Request tracker.
+
+    :param str rest_url: REST URL
+    '''
 
     def __init__(
             self,
             rest_url='http://localhost/REST/1.0/'):
-        '''Initialize RT.
-
-        @type rest_url: str
-        '''
+        '''Initialize RT.'''
 
         self.rest_url = rest_url
         self.credentials = None
@@ -241,10 +251,10 @@ class RT4:
     def login(self, login_name, password):
         '''Save credentials.
 
-        @type login: str
-        @type password: str
+        :param str login_name: Login
+        :param str password: Password
 
-        @rtype: None
+        :return: None
         '''
         
         self.credentials = {'user': login_name, 'pass': password}
@@ -257,9 +267,9 @@ class RT4:
     def check_reply(self, reply):
         '''Check head of reply and return data without head.
         
-        @type reply: str
+        :param str reply: Reply text
 
-        @rtype: str
+        :return: str
         '''
 
         if not reply:
@@ -293,9 +303,9 @@ class RT4:
     def parse_reply(self, reply):
         '''Parse data from string.
 
-        @type reply: str
+        :param str reply: Reply text
 
-        @rtype: {str: str}
+        :return: {str: str}
         '''
 
         if not reply:
@@ -325,9 +335,9 @@ class RT4:
     def parse_history_reply(self, reply):
         '''Parse history data from string.
 
-        @type reply: str
+        :param str reply: History reply text
 
-        @rtype: {str: {str: str}}
+        :return: {str: {str: str}}
         '''
         
         if not reply:
@@ -429,9 +439,9 @@ class RT4:
     def _strip_all(self, history):
         '''Clean history string before next processsing.
 
-        @type history: str
+        :param str history: History text
 
-        @rtype: str
+        return: str
         '''
 
         temp = []
@@ -473,9 +483,9 @@ class RT4:
     def _strip_hashes(self, lines):
         '''Delete hashes from start of lines.
 
-        @type lines: str
+        :param str lines: Lines string
 
-        @rtype: str
+        :return: str
         '''
         
         temp = []
@@ -494,9 +504,9 @@ class RT4:
     def _history_id(self, history):
         '''Return history id from string.
         
-        @type history: str
+        :param str history: History text
         
-        @rtype: str
+        :return: str
         '''
 
         r = re.compile(r'^id: (\d+)$', re.MULTILINE)
@@ -514,9 +524,10 @@ class RT4:
     def load_ticket(self, id_):
         '''Load ticket data and return it as dictionary.
         
-        @type id_: str
+        :param id\_: Ticket ID
+        :type id\_: str
         
-        @rtype: {str: str}
+        :rtype: {str: str}
         '''
 
         request = requests.get(
@@ -530,9 +541,10 @@ class RT4:
     def get_ticket(self, id_):
         '''Return ticket object with data.
         
-        @type id_: str
+        :param id\_: Ticket ID
+        :type id\_: str
 
-        @rtype: Ticket
+        :rtype: Ticket
         '''
 
         tdata = self.load_ticket(id_)
@@ -543,9 +555,9 @@ class RT4:
     def search_ticket(self, query):
         '''Search tickets according to query and return TicketList.
 
-        @type query: str
+        :param str query: Query
 
-        @rtype: TicketList
+        :return: :class:`TicketList`
         '''
 
         request = requests.get(
@@ -559,9 +571,10 @@ class RT4:
     def load_history(self, id_):
         '''Load history data for ticket.
         
-        @type id_: str
+        :param id\_: Ticket ID
+        :type id\_: str
         
-        @rtype: {str: {str: str}}
+        :rtype: {str: {str: str}}
         '''
 
         request = requests.get(
@@ -578,9 +591,9 @@ class RT4:
 
         It depends on 'Disabled' field from RT user reply.
 
-        @type username: str
+        :param str username: Username
 
-        @rtype: boolean
+        :return: bool
         '''
 
         reply = requests.get(
@@ -601,9 +614,9 @@ class RT4:
     def get_usermail(self, username):
         '''Try to find user mail.
 
-        @type username: str
+        :param str username: Username
 
-        @rtype: str
+        :return: str
         '''
 
         reply = requests.get(
@@ -631,10 +644,12 @@ class RT4:
     def add_comment(self, id_, message):
         '''Add comment to ticket.
         
-        @type id_: str
-        @type message: str
+        :param id\_: Ticket ID
+        :type id\_: str
+        :param message: Comment text
+        :type message: str
 
-        @rtype: None
+        :rtype: None
         '''
 
         payload = message
@@ -647,9 +662,10 @@ class RT4:
     def create_ticket(self, ticket_data):
         '''Create ticket and return info.
         
-        @type ticket_data: dict - {'content': ticket body}
+        :param ticket_data: Ticket data
+        :type ticket_data: dict - {'content': ticket body}
         
-        @rtype: str
+        :return: str
         '''
 
         payload = ticket_data

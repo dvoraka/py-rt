@@ -37,3 +37,9 @@ nosetests.xml
 
 # images
 *.png
+
+# Sphinx
+docs/_build
+
+# editors
+*.swp
