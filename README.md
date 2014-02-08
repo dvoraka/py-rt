@@ -1,9 +1,8 @@
-py-rt
-=====
+# Introduction
 
-Library for Request Tracker (http://bestpractical.com/rt/) using REST API.
+Python library for Request Tracker (http://bestpractical.com/rt/) using REST API.
 
-Examples:
+## Examples:
 ```
 >>> import pyrt
 >>> rt = pyrt.RT4('http://localhost/rt/REST/1.0/')
