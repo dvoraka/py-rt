@@ -612,14 +612,20 @@ class RT4:
             return False
 
     def create_user(self, user_data):
-        '''Create user.'''
+        '''Create user.
+
+        :param user_data: User data
+        :type user_data: dict - {'content': user data}
+        
+        :return: str
+        '''
 
         payload = user_data
         reply = requests.post(
             self.rest_url + 'user/new',
             params=self.credentials, data=payload)
 
-        info = reply.text #self.check_reply(reply.text)
+        info = self.check_reply(reply.text)
 
         return info
 
