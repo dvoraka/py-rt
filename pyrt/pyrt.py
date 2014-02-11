@@ -629,6 +629,28 @@ class RT4:
 
         return info
 
+    def create_group(self, group_data):
+
+        payload = group_data
+        reply = requests.post(
+            self.rest_url + 'group/new',
+            params=self.credentials, data=payload)
+
+        info = self.check_reply(reply.text)
+
+        return info
+
+    def edit_group(self, groupname, group_data):
+
+        payload = group_data
+        reply = requests.post(
+            self.rest_url + 'group/' + groupname + '/edit',
+            params=self.credentials, data=payload)
+
+        info = reply.text #self.check_reply(reply.text)
+
+        return info
+
     def get_usermail(self, username):
         '''Try to find user mail.
 
