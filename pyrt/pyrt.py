@@ -268,6 +268,7 @@ class RT4:
         '''Check head of reply and return data without head.
         
         :param str reply: Reply text
+        :raise BadRequestException: If reply from RT is not OK
 
         :return: str
         '''
@@ -312,7 +313,14 @@ class RT4:
 
             return None
 
-        lines = self.check_reply(reply).split('\n')
+        try:
+
+            lines = self.check_reply(reply).split('\n')
+
+        except BadRequestException as e:
+            
+            print(e)
+            return None
 
         data = {}
         for line in lines:
