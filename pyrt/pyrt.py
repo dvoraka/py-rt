@@ -259,11 +259,6 @@ class RT4:
         
         self.credentials = {'user': login_name, 'pass': password}
 
-#    def search(self):
-#        '''???'''
-#
-#        pass
-
     def check_reply(self, reply):
         '''Check head of reply and return data without head.
         
@@ -622,7 +617,7 @@ class RT4:
     def create_user(self, user_data):
         '''Create user.
 
-        :param user_data: User data
+        :param user_data: User raw data
         :type user_data: dict - {'content': user data}
         
         :return: str
@@ -638,6 +633,13 @@ class RT4:
         return info
 
     def create_group(self, group_data):
+        '''Create group.
+
+        :param group_data: Group raw data
+        :type group_data: dict - {'content': group data}
+
+        :return: str
+        '''
 
         payload = group_data
         reply = requests.post(
@@ -649,6 +651,10 @@ class RT4:
         return info
 
     def edit_group(self, groupname, group_data):
+        '''Edit group - limited.
+
+        :return: str
+        '''
 
         payload = group_data
         reply = requests.post(
