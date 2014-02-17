@@ -729,7 +729,14 @@ class RT4:
         if __debug__:
             print('create_ticket reply:\n{}'.format(reply.text))
 
-        info = self.check_reply(reply.text)
+        try:
+
+            info = self.check_reply(reply.text)
+
+        except BadRequestException as e:
+            
+            print(e)
+            return 'Cannot create ticket.'
 
         return info
 
