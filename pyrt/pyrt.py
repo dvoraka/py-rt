@@ -62,6 +62,7 @@ class Ticket:
 
         self.history = TicketHistory(id_, rt)
 
+        self.creator = None
         self.due = None
         self.priority = None
 
@@ -102,6 +103,7 @@ class Ticket:
         
         self.subject = data.get('Subject', None)
 
+        self.creator = data.get('Creator', '')
         self.due = data.get('Due', None)
         self.priority = data.get('Priority', None)
 
