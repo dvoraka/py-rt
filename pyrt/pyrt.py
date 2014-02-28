@@ -670,7 +670,7 @@ class RT4:
 
         :param str username: Username
 
-        :return: str
+        :return: str or None
         '''
 
         reply = requests.get(
@@ -682,7 +682,13 @@ class RT4:
         if __debug__:
             print('get_usermail data:\n{}'.format(data))
 
-        mail = data['EmailAddress']
+        if data is not None:
+
+            mail = data['EmailAddress']
+
+        else:
+
+            mail = None
 
         return mail
 
