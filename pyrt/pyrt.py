@@ -202,9 +202,12 @@ class TicketList:
         '''Initialize container'''
 
         self.tickets = {}
-        for id_ in data:
 
-            self.tickets[id_] = Ticket(id_, data[id_], None, rt)
+        if data is not None:
+
+            for id_ in data:
+
+                self.tickets[id_] = Ticket(id_, data[id_], None, rt)
 
     def list_all(self):
         '''Return tickets info.
