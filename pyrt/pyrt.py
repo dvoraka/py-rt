@@ -666,7 +666,7 @@ class RT4:
             self.rest_url + 'group/' + groupname + '/edit',
             params=self.credentials, data=payload)
 
-        info = reply.text #self.check_reply(reply.text)
+        info = reply.text  # self.check_reply(reply.text)
 
         return info
 
@@ -741,16 +741,6 @@ class RT4:
 
         return info
 
-
-#    def history(self, id_):
-#        '''???'''
-#
-#        request = requests.get(
-#            self.rest_url + 'ticket/' + id_ + '/history?format=l',
-#            params=self.credentials)
-#
-#        return request.text
-#
     def add_comment(self, id_, message):
         '''Add comment to ticket.
         
