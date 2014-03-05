@@ -724,6 +724,23 @@ class RT4:
 
         return lang
 
+    def set_userlang(self, username, user_data):
+        '''Edit user's language. Need root user.
+
+        :param str username: Username
+
+        :return: str
+        '''
+
+        payload = user_data
+        reply = requests.post(
+            self.rest_url + 'user/' + username + '/edit',
+            params=self.credentials, data=payload)
+
+        info = self.check_reply(reply.text)
+
+        return info
+
 
 #    def history(self, id_):
 #        '''???'''
