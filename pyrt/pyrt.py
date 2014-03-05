@@ -671,11 +671,11 @@ class RT4:
         return info
 
     def get_usermail(self, username):
-        '''Try to find user mail.
+        '''Try to find user's mail.
 
         :param str username: Username
 
-        :return: str or None
+        :return: str
         '''
 
         reply = requests.get(
@@ -689,13 +689,41 @@ class RT4:
 
         if data is not None:
 
-            mail = data['EmailAddress']
+            mail = data.get('EmailAddress', '')
 
         else:
 
-            mail = None
+            mail = ''
 
         return mail
+
+    def get_userlang(self, username):
+        '''Return user's language.
+
+        :param str username: Username
+
+        :return: str
+        '''
+
+        reply = requests.get(
+            self.rest_url + 'user/' + username,
+            params=self.credentials)
+
+        data = self.parse_reply(reply.text)
+
+        if __debug__:
+            print('get_userlang data:\n{}'.format(data))
+
+        if data is not None:
+
+            lang = data.get('Lang', '').lower()
+
+        else:
+
+            lang = ''
+
+        return lang
+
 
 #    def history(self, id_):
 #        '''???'''
