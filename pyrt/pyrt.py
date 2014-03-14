@@ -608,7 +608,7 @@ class RT4:
             self.rest_url + 'user/' + username,
             params=self.credentials)
 
-        print(reply.text)
+        #print(reply.text)
         data = self.parse_reply(reply.text)
 
         if 'Disabled' in data:
@@ -684,8 +684,8 @@ class RT4:
 
         data = self.parse_reply(reply.text)
 
-        if __debug__:
-            print('get_usermail data:\n{}'.format(data))
+        #if __debug__:
+        #    print('get_usermail data:\n{}'.format(data))
 
         if data is not None:
 
@@ -711,8 +711,8 @@ class RT4:
 
         data = self.parse_reply(reply.text)
 
-        if __debug__:
-            print('get_userlang data:\n{}'.format(data))
+        #if __debug__:
+        #    print('get_userlang data:\n{}'.format(data))
 
         if data is not None:
 
@@ -756,8 +756,8 @@ class RT4:
         reply = requests.post(
             self.rest_url + 'ticket/' + id_ + '/comment',
             params=self.credentials, data=payload)
-        if __debug__:
-            print('add_comment reply:\n{}'.format(reply.text))
+        #if __debug__:
+        #    print('add_comment reply:\n{}'.format(reply.text))
 
     def create_ticket(self, ticket_data):
         '''Create ticket and return info.
@@ -772,8 +772,8 @@ class RT4:
         reply = requests.post(
             self.rest_url + 'ticket/new',
             params=self.credentials, data=payload)
-        if __debug__:
-            print('create_ticket reply:\n{}'.format(reply.text))
+        #if __debug__:
+        #    print('create_ticket reply:\n{}'.format(reply.text))
 
         try:
 
