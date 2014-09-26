@@ -10,8 +10,8 @@ Python library for Request Tracker (http://bestpractical.com/rt/) using REST API
 >>> tickets = rt.search_ticket('Queue="General"')
 >>> print(tickets)
 Ticket list: 4 tickets
->>> for t in tickets.list_all():
-        print(t)
+>>> for ticket in tickets.list_all():
+        print(ticket)
 (1, u'First ticket')
 (3, u'test1')
 (2, u'Problem')
