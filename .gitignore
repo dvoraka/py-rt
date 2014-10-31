@@ -43,3 +43,6 @@ docs/_build
 
 # editors
 *.swp
+
+# IDE
+.idea/
