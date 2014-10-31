@@ -9,8 +9,13 @@ import requests
 import re
 
 __all__ = [
-    'BadRequestException', 'ParseError', 'Ticket',
-    'TicketHistory', 'TicketList', 'RT4']
+    'BadRequestException',
+    'ParseError',
+    'Ticket',
+    'TicketHistory',
+    'TicketList',
+    'RT4'
+]
 
 ####################################
 #import ConfigParser
@@ -753,7 +758,8 @@ class RT4:
         '''
 
         payload = message
-        reply = requests.post(
+        # TODO: add logging for the reply
+        requests.post(
             self.rest_url + 'ticket/' + id_ + '/comment',
             params=self.credentials, data=payload)
         #if __debug__:
