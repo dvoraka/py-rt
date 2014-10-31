@@ -23,18 +23,18 @@ __all__ = [
 
 class BadRequestException(Exception):
     '''Exception for bad requests.'''
-    
+
     def __init__(self, message):
-        
+
         super(BadRequestException, self).__init__(message)
         self.message = message
 
 
 class ParseError(Exception):
     '''Error in parsing.'''
-    
+
     def __init__(self, message):
-        
+
         super(ParseError, self).__init__(message)
         self.message = message
 
@@ -52,7 +52,7 @@ class Ticket:
 
     def __init__(self, id_, subject, data, rt):
         '''Initialize ticket.'''
-        
+
         if rt is None:
 
             raise TypeError('rt cannot be None')
@@ -69,11 +69,11 @@ class Ticket:
         if data:
 
             self.map_data(data)
-        
+
         self.rt = rt
 
     def __unicode__(self):
-        
+
         return 'Id: {}, Subject: {}'.format(
             self.id_, self.subject)
 
@@ -83,10 +83,10 @@ class Ticket:
 
     def load_all(self):
         '''Load all data.
-        
+
         :return: None
         '''
-        
+
         data = self.rt.load_ticket(self.id_)
         self.map_data(data)
 
@@ -100,7 +100,7 @@ class Ticket:
 
         :return: None
         '''
-        
+
         self.subject = data.get('Subject', None)
 
         self.creator = data.get('Creator', '')
@@ -109,17 +109,17 @@ class Ticket:
 
     def load_history(self):
         '''Load history.
-        
+
         :return: None
         '''
-        
+
         self.history.load()
 
     def comment(self, text):
         '''Add comment to ticket.
-        
+
         :param str text: Text
-        
+
         :return: None
         '''
 
@@ -140,7 +140,7 @@ class TicketHistory:
 
     def __init__(self, id_, rt):
         '''Initialize history.'''
-        
+
         self.id_ = id_
         self.rt = rt
 
@@ -152,13 +152,13 @@ class TicketHistory:
 
         # wanted history fields
         self.fields = ['Ticket', 'Type', 'Content', 'Creator']
-    
+
     def load(self):
         '''Load all data to object.
 
         :return: None
         '''
-        
+
         data = self.rt.load_history(self.id_)
         self.history = data
 
@@ -214,7 +214,7 @@ class TicketList:
 
         :return: tuple of (int, str)
         '''
-        
+
         tinfo = []
         for tid, tobj in self.tickets.items():
 
@@ -223,7 +223,7 @@ class TicketList:
                 tinfo.append((int(tid), tobj.subject))
 
             except ValueError as e:
-                
+
                 print(e)
 
         return tuple(tinfo)
@@ -252,7 +252,7 @@ class RT4:
 
         self.rest_url = rest_url
         self.credentials = None
-    
+
     def login(self, login_name, password):
         '''Save credentials.
 
@@ -261,12 +261,12 @@ class RT4:
 
         :return: None
         '''
-        
+
         self.credentials = {'user': login_name, 'pass': password}
 
     def check_reply(self, reply):
         '''Check head of reply and return data without head.
-        
+
         :param str reply: Reply text
         :raise BadRequestException: If reply from RT is not OK
 
@@ -292,7 +292,7 @@ class RT4:
                 raise BadRequestException(lines[2:5])
 
             else:
-                
+
                 raise BadRequestException('Unknown error.')
 
         # create string and remove redundant empty lines at the end
@@ -318,7 +318,7 @@ class RT4:
             lines = self.check_reply(reply).split('\n')
 
         except BadRequestException as e:
-            
+
             print(e)
             return None
 
@@ -347,7 +347,7 @@ class RT4:
 
         :return: {str: {str: str}}
         '''
-        
+
         if not reply:
 
             return None
@@ -459,7 +459,7 @@ class RT4:
                 continue
 
             elif line.startswith('\n'):
-                
+
                 continue
 
             else:
@@ -471,12 +471,12 @@ class RT4:
         new_str = ''
         nl = False
         for char in clean_str:
-            
+
             if char == '\n' and not nl:
 
                 new_str += char
                 nl = True
-            
+
             elif char == '\n' and nl:
 
                 nl = True
@@ -495,7 +495,7 @@ class RT4:
 
         :return: str
         '''
-        
+
         temp = []
         for line in lines.split('\n'):
 
@@ -511,9 +511,9 @@ class RT4:
 
     def _history_id(self, history):
         '''Return history id from string.
-        
+
         :param str history: History text
-        
+
         :return: str
         '''
 
@@ -531,10 +531,10 @@ class RT4:
 
     def load_ticket(self, id_):
         '''Load ticket data and return it as dictionary.
-        
+
         :param id\_: Ticket ID
         :type id\_: str
-        
+
         :rtype: {str: str}
         '''
 
@@ -548,7 +548,7 @@ class RT4:
 
     def get_ticket(self, id_):
         '''Return ticket object with data.
-        
+
         :param id\_: Ticket ID
         :type id\_: str
 
@@ -575,13 +575,13 @@ class RT4:
         tl = TicketList(self.parse_reply(request.text), self)
 
         return tl
-    
+
     def load_history(self, id_):
         '''Load history data for ticket.
-        
+
         :param id\_: Ticket ID
         :type id\_: str
-        
+
         :rtype: {str: {str: str}}
         '''
 
@@ -624,7 +624,7 @@ class RT4:
 
         :param user_data: User raw data
         :type user_data: dict - {'content': user data}
-        
+
         :return: str
         '''
 
@@ -743,7 +743,7 @@ class RT4:
 
     def add_comment(self, id_, message):
         '''Add comment to ticket.
-        
+
         :param id\_: Ticket ID
         :type id\_: str
         :param message: Comment text
@@ -761,10 +761,10 @@ class RT4:
 
     def create_ticket(self, ticket_data):
         '''Create ticket and return info.
-        
+
         :param ticket_data: Ticket data
         :type ticket_data: dict - {'content': ticket body}
-        
+
         :return: str
         '''
 
@@ -780,7 +780,7 @@ class RT4:
             info = self.check_reply(reply.text)
 
         except BadRequestException as e:
-            
+
             print(e)
             return 'Cannot create ticket.'
 
@@ -789,5 +789,5 @@ class RT4:
 
 class RequestTracker:
     'High-level API for RT'
-    
+
     pass
