@@ -1,5 +1,6 @@
 # Introduction
 [![Build Status](https://travis-ci.org/dvoraka/py-rt.svg?branch=master)](https://travis-ci.org/dvoraka/py-rt)
+[![PyPI version](https://badge.fury.io/py/py-rt.svg)](http://badge.fury.io/py/py-rt)
 
 Python library for [Request Tracker](http://bestpractical.com/rt/) using REST API.
 
