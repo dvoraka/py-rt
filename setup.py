@@ -10,7 +10,7 @@ with open(path.join(here, 'DESCRIPTION.rst'), encoding='utf-8') as fh:
 
 setup(
     name='py-rt',
-    version='0.2',
+    version='0.2.1',
 
     # description
     description='Low-level API for Request tracker 4',
