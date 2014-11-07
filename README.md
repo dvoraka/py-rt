@@ -21,3 +21,7 @@ Ticket list: 4 tickets
 (5, u'Help me!')
 
 ```
+
+## Documentation:
+
+[Docs](http://py-rt.readthedocs.org/en/latest/)
