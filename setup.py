@@ -10,7 +10,7 @@ with open(path.join(here, 'DESCRIPTION.rst'), encoding='utf-8') as fh:
 
 setup(
     name='py-rt',
-    version='0.2.1',
+    version='0.2.2',
 
     # description
     description='Low-level API for Request tracker 4',
@@ -38,7 +38,7 @@ setup(
         'Programming Language :: Python :: 2.7',
     ],
 
-    keywords='rt4',
+    keywords='rt4 helpdesk request tracker',
 
     packages=find_packages(exclude=['docs', 'tests']),
 
