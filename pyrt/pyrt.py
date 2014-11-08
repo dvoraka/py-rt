@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-'''Module for Request tracker wrapper.'''
+"""Module for Request tracker wrapper."""
 
 from __future__ import unicode_literals
 from __future__ import print_function
@@ -19,7 +19,7 @@ __all__ = [
 
 
 class BadRequestException(Exception):
-    '''Exception for bad requests.'''
+    """Exception for bad requests."""
 
     def __init__(self, message):
 
@@ -28,7 +28,7 @@ class BadRequestException(Exception):
 
 
 class ParseError(Exception):
-    '''Error in parsing.'''
+    """Error in parsing."""
 
     def __init__(self, message):
 
@@ -37,15 +37,16 @@ class ParseError(Exception):
 
 
 class Ticket:
-    '''Represent RT ticket.
+    """Represents RT ticket.
 
-    :param str id\_: Ticket ID
-    :param str subject: Ticket subject
-    :param str data: Data
-    :param RT4 rt: RT instance
-    :raise TypeError: If rt is None
-
-    '''
+    Args:
+        id_ (str): ticket ID
+        subject (str): ticket subject
+        data (str): data
+        rt (RT): RT instance
+    Raises:
+        TypeError: if rt is None
+    """
 
     def __init__(self, id_, subject, data, rt):
         '''Initialize ticket.'''
