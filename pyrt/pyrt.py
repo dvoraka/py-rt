@@ -49,7 +49,7 @@ class Ticket(object):
     """
 
     def __init__(self, id_, subject, data, rt):
-        '''Initialize ticket.'''
+        """Initialize ticket."""
 
         if rt is None:
 
@@ -80,10 +80,11 @@ class Ticket(object):
         return unicode(self).encode('utf-8')
 
     def load_all(self):
-        '''Load all data.
+        """Load all data.
 
-        :return: None
-        '''
+        Return:
+            None
+        """
 
         data = self.rt.load_ticket(self.id_)
         self.map_data(data)
@@ -91,13 +92,14 @@ class Ticket(object):
         self.load_history()
 
     def map_data(self, data):
-        '''Map data to attributes.
+        """Map data to attributes.
 
-        :param data: Data
-        :type data: {str: str}
+        Args:
+            data ({str: str}): the data
 
-        :return: None
-        '''
+        Return:
+            None
+        """
 
         self.subject = data.get('Subject', None)
 
