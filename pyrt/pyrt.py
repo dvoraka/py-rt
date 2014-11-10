@@ -92,7 +92,7 @@ class Ticket(object):
         self.load_history()
 
     def map_data(self, data):
-        """Map data to attributes.
+        """Map the data to attributes.
 
         Args:
             data ({str: str}): the data
@@ -108,20 +108,23 @@ class Ticket(object):
         self.priority = data.get('Priority', None)
 
     def load_history(self):
-        '''Load history.
+        """Load the history.
 
-        :return: None
-        '''
+        Return:
+            None
+        """
 
         self.history.load()
 
     def comment(self, text):
-        '''Add comment to ticket.
+        """Add a comment to the ticket.
 
-        :param str text: Text
+        Args:
+            text (str): the comment text
 
-        :return: None
-        '''
+        Return:
+            None
+        """
 
         data = {
             'content':
