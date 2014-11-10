@@ -36,7 +36,7 @@ class ParseError(Exception):
         self.message = message
 
 
-class Ticket:
+class Ticket(object):
     """Represents RT ticket.
 
     Args:
@@ -127,7 +127,7 @@ class Ticket:
         self.rt.add_comment(self.id_, data)
 
 
-class TicketHistory:
+class TicketHistory(object):
     '''Store and offer views for history.
 
     :param id\_: ID
@@ -189,7 +189,7 @@ class TicketHistory:
             self.comments.append(temp)
 
 
-class TicketList:
+class TicketList(object):
     '''Container for tickets.
 
         :param data: Tickets
@@ -237,7 +237,7 @@ class TicketList:
         return unicode(self).encode('utf-8')
 
 
-class RT4:
+class RT4(object):
     '''Request tracker.
 
     :param str rest_url: REST URL
@@ -786,7 +786,7 @@ class RT4:
         return info
 
 
-class RequestTracker:
+class RequestTracker(object):
     'High-level API for RT'
 
     pass
