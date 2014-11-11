@@ -216,18 +216,18 @@ class TicketList(object):
             tuple of (int, str)
         """
 
-        tinfo = []
-        for tid, tobj in self.tickets.items():
+        tickets_info = []
+        for ticket_id, ticket in self.tickets.items():
 
             try:
 
-                tinfo.append((int(tid), tobj.subject))
+                tickets_info.append((int(ticket_id), ticket.subject))
 
             except ValueError as e:
 
                 print(e)
 
-        return tuple(tinfo)
+        return tuple(tickets_info)
 
     def __unicode__(self):
 
