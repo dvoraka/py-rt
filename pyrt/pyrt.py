@@ -194,17 +194,15 @@ class TicketHistory(object):
 
 
 class TicketList(object):
-    '''Container for tickets.
+    """Container for tickets.
 
-        :param data: Tickets
-        :type data: dict of tickets {str: str}/{'id': 'Subject'}
-        '''
+    Args:
+        data ({str: str}/{'id': 'Subject'}): the tickets
+    """
 
     def __init__(self, data, rt):
-        '''Initialize container'''
 
         self.tickets = {}
-
         if data is not None:
 
             for id_ in data:
@@ -212,10 +210,11 @@ class TicketList(object):
                 self.tickets[id_] = Ticket(id_, data[id_], None, rt)
 
     def list_all(self):
-        '''Return tickets info.
+        """Return tickets info.
 
-        :return: tuple of (int, str)
-        '''
+        Return:
+            tuple of (int, str)
+        """
 
         tinfo = []
         for tid, tobj in self.tickets.items():
