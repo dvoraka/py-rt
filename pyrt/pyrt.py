@@ -133,16 +133,14 @@ class Ticket(object):
 
 
 class TicketHistory(object):
-    '''Store and offer views for history.
+    """Store and offer views for history.
 
-    :param id\_: ID
-    :type id\_: str
-    :param rt: RT4 instance
-    :type rt: :class:`RT4`
-    '''
+    Args:
+        id_ (str): the ticket ID
+        rt (RT4): the RT4 instance
+    """
 
     def __init__(self, id_, rt):
-        '''Initialize history.'''
 
         self.id_ = id_
         self.rt = rt
@@ -157,10 +155,11 @@ class TicketHistory(object):
         self.fields = ['Ticket', 'Type', 'Content', 'Creator']
 
     def load(self):
-        '''Load all data to object.
+        """Load all data into the object.
 
-        :return: None
-        '''
+        Return:
+            None
+        """
 
         data = self.rt.load_history(self.id_)
         self.history = data
