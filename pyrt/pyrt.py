@@ -241,38 +241,44 @@ class TicketList(object):
 
 
 class RT4(object):
-    '''Request tracker.
+    """Request tracker.
 
-    :param str rest_url: REST URL
-    '''
+    Args:
+        rest_url (str): REST API URL
+    """
 
     def __init__(
             self,
             rest_url='http://localhost/REST/1.0/'):
-        '''Initialize RT.'''
 
         self.rest_url = rest_url
         self.credentials = None
 
     def login(self, login_name, password):
-        '''Save credentials.
+        """Save the credentials.
 
-        :param str login_name: Login
-        :param str password: Password
+        Args:
+            login_name (str): login
+            password (str): password
 
-        :return: None
-        '''
+        Return:
+            None
+        """
 
         self.credentials = {'user': login_name, 'pass': password}
 
     def check_reply(self, reply):
-        '''Check head of reply and return data without head.
+        """Check a head of a reply and return data without the head.
 
-        :param str reply: Reply text
-        :raise BadRequestException: If reply from RT is not OK
+        Args:
+            reply (str): the reply text
 
-        :return: str
-        '''
+        Raises:
+            BadRequestException: if the reply from RT is not OK
+
+        Return:
+            str: cleaned data
+        """
 
         if not reply:
 
@@ -296,7 +302,7 @@ class RT4(object):
 
                 raise BadRequestException('Unknown error.')
 
-        # create string and remove redundant empty lines at the end
+        # create a string and remove redundant empty lines at the end
         body = '\n'.join(lines[2:])
         body = body.rstrip() + '\n'
 
